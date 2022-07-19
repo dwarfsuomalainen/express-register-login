@@ -11,12 +11,13 @@ const jwt = require("jsonwebtoken");
 
 /* GET users listing. */
 router.get('/list', (req, res, next) => {
-  //res.send('respond with a resource');
-    User.find({}, (err, users) =>{
-      if(err) return next(err);
-    })
+  User.find({}, (err, users) =>{
+    if(err) return next(err);
     res.render("users", {users});
+  })
+  
 });
+
 
 
 router.get('/register', (req, res, next) => {
