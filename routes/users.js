@@ -1,3 +1,5 @@
+
+
 var express = require('express');
 var router = express.Router();
 const bcrypt = require("bcryptjs");
@@ -5,12 +7,11 @@ const mongoose = require("mongoose");
 const {body, validationResult } = require("express-validator");
 const User = require("./models/User");
 const jwt = require("jsonwebtoken");
-//const validateToken = require("../auth/validateToken.js")
-
+const validateToken = require("../auth/validateToken");
 
 
 /* GET users listing. */
-router.get('/list', (req, res, next) => {
+router.get('/api/private', validateToken, (req, res, next) => {
   User.find({}, (err, users) =>{
     if(err) return next(err);
     res.render("users", {users});
@@ -18,18 +19,51 @@ router.get('/list', (req, res, next) => {
   
 });
 
+router.get('/login', (req, res, next) => {
+  res.render('login');
+});
+
+router.post('/api/user/login', 
+  body("username").trim().escape(),
+  body("password").escape(),
+  (req, res, next) => {
+    User.findOne({username: req.body.username}, (err, user) =>{
+    if(err) throw err;
+    if(!user) {
+      return res.status(403).json({message: "Login failed"});
+    } else {
+      bcrypt.compare(req.body.password, user.password, (err, isMatch) => {
+        if(err) throw err;
+        if(isMatch) {
+          const jwtPayload = {
+            id: user._id,
+            username: user.username
+          }
+          jwt.sign(
+            jwtPayload,
+            process.env.SECRET,
+            {
+              expiresIn: 120
+            },
+            (err, token) => {
+              res.json({success: true, token});
+            }
+          );
+        }
+      })
+    }
+
+    })
+
+});
+
 
 
 router.get('/register', (req, res, next) => {
-  res.render('Register');
+  res.render('register');
 });
 
-
-router.get('/login', (req, res, next) =>{
-  res.render('Login');
-});
-
-router.post('/register', 
+router.post('/api/user/register', 
   body("username").isLength({min: 3}).trim().escape(),
   body("password").isLength({min: 5}),
   (req, res, next) => {
@@ -56,18 +90,14 @@ router.post('/register',
               (err, ok) => {
                 if(err) throw err;
                 return res.redirect("/users/login");
-
-            }
-          )
-        })
-      })
-    }
-  })
-  
-  
+              }
+            );
+          });
+        });
+      }
+    });
 });
 
 
 
 module.exports = router;
-
