@@ -11,7 +11,7 @@ const validateToken = require("../auth/validateToken");
 
 
 /* GET users listing. */
-router.get('/api/private', validateToken, (req, res, next) => {
+router.get('/users/list', validateToken, (req, res, next) => {
   User.find({}, (err, users) =>{
     if(err) return next(err);
     res.render("users", {users});
@@ -23,21 +23,23 @@ router.get('/login', (req, res, next) => {
   res.render('login');
 });
 
-router.post('/api/user/login', 
-  body("username").trim().escape(),
-  body("password").escape(),
+router.post('/user/login', 
+  body("email").trim().escape(),
+  body("password"),
   (req, res, next) => {
-    User.findOne({username: req.body.username}, (err, user) =>{
+    User.findOne({email: req.body.email}, (err, email) =>{
     if(err) throw err;
-    if(!user) {
+    console.log(email);
+
+    if(!email) {
       return res.status(403).json({message: "Login failed"});
     } else {
-      bcrypt.compare(req.body.password, user.password, (err, isMatch) => {
+      bcrypt.compare(req.body.password, email.password, (err, isMatch) => {
         if(err) throw err;
         if(isMatch) {
           const jwtPayload = {
-            id: user._id,
-            username: user.username
+            id: email._id,
+            email: email.email
           }
           jwt.sign(
             jwtPayload,
@@ -63,33 +65,33 @@ router.get('/register', (req, res, next) => {
   res.render('register');
 });
 
-router.post('/api/user/register', 
-  body("username").isLength({min: 3}).trim().escape(),
+router.post('/user/register/', 
+  body("email").trim().escape(),
   body("password").isLength({min: 5}),
   (req, res, next) => {
     const errors = validationResult(req);
     if(!errors.isEmpty()) {
       return res.status(400).json({errors: errors.array()});
     }
-    User.findOne({username: req.body.username}, (err, user) => {
+    User.findOne({email: req.body.email}, (err, email) => {
       if(err) {
         console.log(err);
         throw err
       };
-      if(user){
-        return res.status(403).json({username: "Username already in use."});
+      if(email){
+        return res.status(403).json({email: "This email already registered"});
       } else {
         bcrypt.genSalt(10, (err, salt) => {
           bcrypt.hash(req.body.password, salt, (err, hash) => {
             if(err) throw err;
             User.create(
               {
-                username: req.body.username,
+                email: req.body.email,
                 password: hash
               },
               (err, ok) => {
                 if(err) throw err;
-                return res.redirect("/users/login");
+                return res.redirect("/user/login");
               }
             );
           });

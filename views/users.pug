@@ -6,11 +6,11 @@ block content
     tr 
       th #
       th ID 
-      th Username 
+      th Email  
       th Password
     each user, index in users 
       tr 
         td= index 
         td= user["id"]
-        td= user["username"]
+        td= user["email"]
         td= user["password"]

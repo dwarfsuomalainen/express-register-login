@@ -2,9 +2,9 @@ extends layout
 
 block content
   h1 Register
-  form(action="/users/register" method="POST")
-    label(for="username") Username 
-    input(type="text" name="username" id="username" required)
+  form(action="/api/user/register" method="POST")
+    label(for="email") Email 
+    input(type="email" name="email" id="email" required)
     label(for="password") Password 
     input(type="password" name="password" id="password" required)
     button(class="btn" type="submit") Register
