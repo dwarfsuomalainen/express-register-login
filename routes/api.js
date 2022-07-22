@@ -91,7 +91,7 @@ router.post('/user/register/',
               },
               (err, ok) => {
                 if(err) throw err;
-                return res.redirect("/api/user/login");
+                return res.redirect("/api/login");
               }
             );
           });
