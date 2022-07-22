@@ -11,7 +11,7 @@ const validateToken = require("../auth/validateToken");
 
 
 /* GET users listing. */
-router.get('/users/list', validateToken, (req, res, next) => {
+router.get('/private', validateToken, (req, res, next) => {
   User.find({}, (err, users) =>{
     if(err) return next(err);
     res.render("users", {users});
@@ -24,7 +24,7 @@ router.get('/login', (req, res, next) => {
 });
 
 router.post('/user/login', 
-  body("email").trim().escape(),
+  body("email").trim(),
   body("password"),
   (req, res, next) => {
     User.findOne({email: req.body.email}, (err, email) =>{
@@ -66,7 +66,7 @@ router.get('/register', (req, res, next) => {
 });
 
 router.post('/user/register/', 
-  body("email").trim().escape(),
+  body("email").trim(),
   body("password").isLength({min: 5}),
   (req, res, next) => {
     const errors = validationResult(req);
@@ -91,7 +91,7 @@ router.post('/user/register/',
               },
               (err, ok) => {
                 if(err) throw err;
-                return res.redirect("/user/login");
+                return res.redirect("/api/user/login");
               }
             );
           });
