@@ -8,16 +8,17 @@ const {body, validationResult } = require("express-validator");
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 const validateToken = require("../auth/validateToken");
-
+var emailY = 0;
 
 /* GET users listing. */
 router.get('/private', validateToken, (req, res, next) => {
+  console.log(emailY);
+  res.json({"message": emailY})
   
-  
-  User.find({}, (err, users) =>{
+  /*User.find({}, (err, users) =>{
     if(err) return next(err);
-    res.render("users", {users});
-  })
+    res.render("users", {users}); - list of users 
+  })*/
   
 });
 
@@ -32,6 +33,7 @@ router.post('/user/login',
     User.findOne({email: req.body.email}, (err, email) =>{
     if(err) throw err;
     console.log(email);
+    emailY = email.email;
 
     if(!email) {
       return res.status(403).json({message: "Login failed"});
@@ -43,7 +45,8 @@ router.post('/user/login',
             id: email._id,
             email: email.email
           }
-          console.log(jwtPayload);
+          let emailX = jwtPayload.email
+          console.log(jwtPayload.email);
           jwt.sign(
             jwtPayload,
             process.env.SECRET,
@@ -51,7 +54,7 @@ router.post('/user/login',
               expiresIn: 120
             },
             (err, token) => {
-              res.json({success: true, token});
+              res.json({success: true, token,emailX});
             }
           );
         }

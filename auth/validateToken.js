@@ -10,10 +10,10 @@ module.exports = function(req, res, next) {
         token = null;
     }
     if(token == null) return res.sendStatus(401);
-    console.log("Token found");
-    jwt.verify(token, process.env.SECRET, (err, user) => {
-        if(err) return res.sendStatus(403);
-        req.user = user;
+    console.log("Token ok");
+    jwt.verify(token, process.env.SECRET, (err, email) => {
+        if(err) return res.sendStatus(401);
+        req.email = email;
         next();
     });
 
