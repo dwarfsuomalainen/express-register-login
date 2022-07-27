@@ -2,9 +2,10 @@ extends layout
 
 block content
   h1 Login
-  form(action="/api/user/login" method="POST")
+  form(action="/api/user/login" id="login-form" method="POST")
     label(for="email") Email  
     input(type="email" name="email" id="email" required)   
     label(for="password") Password 
     input(type="password" name="password" id="password" required)
     button(class="btn" type="submit") Login
+
