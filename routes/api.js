@@ -5,13 +5,15 @@ var router = express.Router();
 const bcrypt = require("bcryptjs");
 const mongoose = require("mongoose");
 const {body, validationResult } = require("express-validator");
-const User = require("./models/User");
+const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 const validateToken = require("../auth/validateToken");
 
 
 /* GET users listing. */
 router.get('/private', validateToken, (req, res, next) => {
+  
+  
   User.find({}, (err, users) =>{
     if(err) return next(err);
     res.render("users", {users});
@@ -41,6 +43,7 @@ router.post('/user/login',
             id: email._id,
             email: email.email
           }
+          console.log(jwtPayload);
           jwt.sign(
             jwtPayload,
             process.env.SECRET,
@@ -66,8 +69,8 @@ router.get('/register', (req, res, next) => {
 });
 
 router.post('/user/register/', 
-  body("email").trim(),
-  body("password").isLength({min: 5}),
+  body("email").isEmail().trim(),
+  body("password").isLength({min: 8}),
   (req, res, next) => {
     const errors = validationResult(req);
     if(!errors.isEmpty()) {
