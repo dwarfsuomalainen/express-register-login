@@ -13,7 +13,7 @@ var emailY = 0;
 /* GET users listing. */
 router.get('/private', validateToken, (req, res, next) => {
   console.log(emailY);
-  res.json({"message": emailY})
+  res.json({"email": emailY})
   
   /*User.find({}, (err, users) =>{
     if(err) return next(err);
