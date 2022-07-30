@@ -6,14 +6,21 @@ const bcrypt = require("bcryptjs");
 const mongoose = require("mongoose");
 const {body, validationResult } = require("express-validator");
 const User = require("../models/User");
+const Todos = require("../models/Todo")
 const jwt = require("jsonwebtoken");
 const validateToken = require("../auth/validateToken");
+const { json } = require('express');
+//const passport = require('passport');
+//const localStrategy = require('passport-local').Strategy;
+
 var emailY = 0;
+var EMAILID;
+var idTODOS;
 
 /* GET users listing. */
 router.get('/private', validateToken, (req, res, next) => {
   console.log(emailY);
-  res.json({"email": emailY})
+  res.json({"email": emailY});
   
   /*User.find({}, (err, users) =>{
     if(err) return next(err);
@@ -26,6 +33,36 @@ router.get('/login', (req, res, next) => {
   res.render('login');
 });
 
+// todos
+
+router.post('/todos/', validateToken, (req, res, next) => {
+
+  console.log(validateToken);
+  let items = Todos.findOne({user: EMAILID}, (err, user) => {
+    console.log(EMAILID);
+
+      if(err) return next(err);
+      if(!user){
+              new Todos({user: EMAILID,
+                        items: req.body.items
+                          }).save((err) => {console.log(req.body);
+                              if(err) return next (err);
+                              return res.status(200).send("ok");
+                          });      
+      } else { 
+        //let itit = items;
+        console.log(EMAILID)
+        Todos.findOneAndUpdate({"_id":EMAILID}, {$set:{"items": req.body.items}},
+        function(err,docs) {
+          if (err) throw err;
+          else{ console.log("updated", docs);}
+        }
+        );
+        return res.send("ok2");
+  }
+  })
+})
+
 router.post('/user/login', 
   body("email").trim(),
   body("password"),
@@ -34,6 +71,7 @@ router.post('/user/login',
     if(err) throw err;
     console.log(email);
     emailY = email.email;
+
 
     if(!email) {
       return res.status(403).json({message: "Login failed"});
@@ -47,14 +85,15 @@ router.post('/user/login',
           }
           let emailX = jwtPayload.email
           console.log(jwtPayload.email);
-          jwt.sign(
-            jwtPayload,
-            process.env.SECRET,
+          EMAILID = jwtPayload.id;
+          console.log(EMAILID);
+          jwt.sign(jwtPayload,process.env.SECRET,
             {
               expiresIn: 120
             },
             (err, token) => {
-              res.json({success: true, token,emailX});
+              //console.log(idTODOS);
+              res.json({success: true, token, emailX, EMAILID});
             }
           );
         }

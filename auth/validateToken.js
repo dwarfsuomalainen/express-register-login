@@ -11,12 +11,18 @@ module.exports = function(req, res, next) {
     }
     if(token == null) return res.sendStatus(401);
     console.log("Token ok");
-    jwt.verify(token, process.env.SECRET, (err, email) => {
+    let decode = jwt.verify(token, process.env.SECRET, (err, email,id) => {
         if(err) return res.sendStatus(401);
         req.email = email;
+        req._id = id;
+        res.json({data: decode})
         next();
     });
 
 
     
 };
+
+
+
+
