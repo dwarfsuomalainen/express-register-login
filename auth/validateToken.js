@@ -14,15 +14,6 @@ module.exports = function(req, res, next) {
     let decode = jwt.verify(token, process.env.SECRET, (err, email,id) => {
         if(err) return res.sendStatus(401);
         req.email = email;
-        req._id = id;
-        res.json({data: decode})
         next();
     });
-
-
-    
 };
-
-
-
-

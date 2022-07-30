@@ -9,6 +9,7 @@ const User = require("../models/User");
 const Todos = require("../models/Todo")
 const jwt = require("jsonwebtoken");
 const validateToken = require("../auth/validateToken");
+const extractToken = require("../auth/extractToken");
 const { json } = require('express');
 //const passport = require('passport');
 //const localStrategy = require('passport-local').Strategy;
@@ -18,9 +19,10 @@ var EMAILID;
 var idTODOS;
 
 /* GET users listing. */
-router.get('/private', validateToken, (req, res, next) => {
+router.get("/private", validateToken, (req, res, next) => {
+  const { email } = extractToken(req);
   console.log(emailY);
-  res.json({"email": emailY});
+  res.json({ email });
   
   /*User.find({}, (err, users) =>{
     if(err) return next(err);
@@ -35,33 +37,23 @@ router.get('/login', (req, res, next) => {
 
 // todos
 
-router.post('/todos/', validateToken, (req, res, next) => {
+router.post("/todos/", validateToken, (req, res, next) => {
+  const { id } = extractToken(req);
 
-  console.log(validateToken);
-  let items = Todos.findOne({user: EMAILID}, (err, user) => {
-    console.log(EMAILID);
-
-      if(err) return next(err);
-      if(!user){
-              new Todos({user: EMAILID,
-                        items: req.body.items
-                          }).save((err) => {console.log(req.body);
-                              if(err) return next (err);
-                              return res.status(200).send("ok");
-                          });      
-      } else { 
-        //let itit = items;
-        console.log(EMAILID)
-        Todos.findOneAndUpdate({"_id":EMAILID}, {$set:{"items": req.body.items}},
-        function(err,docs) {
-          if (err) throw err;
-          else{ console.log("updated", docs);}
-        }
-        );
-        return res.send("ok2");
-  }
-  })
-})
+  Todos.findOne({ user: id }, (err, existingTodo) => {
+    if (err) return next(err);
+    if (!existingTodo) {
+      new Todos({ user: id, items: req.body.items }).save((err) => {
+        if (err) return next(err);
+        return res.status(200).send("ok");
+      });
+    } else {
+      existingTodo.items = [...existingTodo.items, ...req.body.items];
+      existingTodo.save();
+      return res.send("ok2");
+    }
+  });
+});
 
 router.post('/user/login', 
   body("email").trim(),
